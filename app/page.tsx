@@ -1,46 +1,29 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useState } from "react";
-import LoginForm from "@/components/LoginForm";
-import SignUpForm from "@/components/SignUpForm";
-export default function Page() {
-  const [showLogin, setShowLogin] = useState(true);
+const page = async () => {
+  // Temporary hardcoded authentication
+  // Replace this later with your real session/auth logic.
+  const user = {
+    id: "user_123",
+    name: "Asia Ashraf",
+    email: "asia@example.com",
+  };
+
+  // If user is not authenticated
+  if (!user) {
+    redirect("/auth");
+  }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        {showLogin ? (
-          <>
-            <LoginForm />
+    <main>
+      <h1>Welcome, {user.name} 👋</h1>
 
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <button
-                type="button"
-                onClick={() => setShowLogin(false)}
-                className="font-medium text-primary hover:underline"
-              >
-                Sign Up
-              </button>
-            </p>
-          </>
-        ) : (
-          <>
-            <SignUpForm />
-
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => setShowLogin(true)}
-                className="font-medium text-primary hover:underline"
-              >
-                Login
-              </button>
-            </p>
-          </>
-        )}
+      <div>
+        <p>Email: {user.email}</p>
+        <p>User ID: {user.id}</p>
       </div>
     </main>
   );
-}
+};
+
+export default page;

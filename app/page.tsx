@@ -1,13 +1,10 @@
+import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 const page = async () => {
-  // Temporary hardcoded authentication
-  // Replace this later with your real session/auth logic.
-  const user = {
-    id: "user_123",
-    name: "Asia Ashraf",
-    email: "asia@example.com",
-  };
+
+
+  const user = await getCurrentUser()
 
   // If user is not authenticated
   if (!user) {

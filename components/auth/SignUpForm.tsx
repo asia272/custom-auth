@@ -65,7 +65,7 @@ const SignUpForm = () => {
             }
 
             // Signup successful
-            router.push("/auth");
+            router.push("/");
             router.refresh();
         } catch (error) {
             console.error("Signup error:", error);

@@ -50,7 +50,7 @@ export async function signupAction(
                 passwordHash,
             },
         });
-
+        await createSession(user.id);
         return {
             success: true,
             message: "Account created successfully.",
@@ -58,6 +58,7 @@ export async function signupAction(
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
             },
         };
     } catch (error) {

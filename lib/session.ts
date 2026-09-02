@@ -27,7 +27,7 @@ export async function createSession(userId: string) {
     // Session expires after 30 days
     const expiresAt = new Date(Date.now() + SESSION_DURATION);
 
-    await prisma.session.create({
+    await prisma.session.create({//create DB session
         data: {
             tokenHash,
             userId,
@@ -38,7 +38,7 @@ export async function createSession(userId: string) {
     // Store raw token only in HTTP-only cookie
     const cookieStore = await cookies();
 
-    cookieStore.set(SESSION_COOKIE_NAME, token, {
+    cookieStore.set(SESSION_COOKIE_NAME, token, { //create browser cookies
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",

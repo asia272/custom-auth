@@ -65,8 +65,11 @@ const SignUpForm = () => {
             }
 
             // Signup successful
-            router.push("/");
-            router.refresh();
+            if (result.success) {
+                router.push(
+                    `/auth/verify-email?email=${encodeURIComponent(email)}`
+                );
+            }
         } catch (error) {
             console.error("Signup error:", error);
             setError("Something went wrong. Please try again.");

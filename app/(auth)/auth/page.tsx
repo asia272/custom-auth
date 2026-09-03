@@ -3,8 +3,13 @@
 import { useState } from "react";
 import LoginForm from "@/components/auth/LoginForm";
 import SignUpForm from "@/components/auth/SignUpForm";
+
+
 export default function Page() {
     const [showLogin, setShowLogin] = useState(true);
+
+
+
 
     return (
         <main className="flex min-h-screen items-center justify-center p-6">

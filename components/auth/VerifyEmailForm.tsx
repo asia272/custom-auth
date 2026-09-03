@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyEmailAction } from "@/actions/verifyEmail.action";
+import { resendVerificationOtpAction } from "@/actions/resendVerificationOtpAction";
+
 
 export default function VerifyEmailForm() {
     const router = useRouter();
@@ -12,6 +14,7 @@ export default function VerifyEmailForm() {
 
     const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
+    const [resending, setResending] = useState(false);
     const [message, setMessage] = useState("");
 
     async function handleSubmit(
@@ -50,6 +53,28 @@ export default function VerifyEmailForm() {
             setMessage("Something went wrong.");
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function handleResendOtp() {
+        if (!email) {
+            setMessage("Email is missing.");
+            return;
+        }
+
+        try {
+            setResending(true);
+            setMessage("");
+
+            const result =
+                await resendVerificationOtpAction(email);
+
+            setMessage(result.message);
+        } catch (error) {
+            console.error(error);
+            setMessage("Something went wrong.");
+        } finally {
+            setResending(false);
         }
     }
 
@@ -100,14 +125,14 @@ export default function VerifyEmailForm() {
                 </div>
 
                 {message && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-gray-600">
                         {message}
                     </p>
                 )}
 
                 <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || resending}
                     className="w-full rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
                 >
                     {loading
@@ -115,6 +140,24 @@ export default function VerifyEmailForm() {
                         : "Verify Email"}
                 </button>
             </form>
+
+            {/* RESEND OTP */}
+            <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600">
+                    Didn't receive the code?
+                </p>
+
+                <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resending || loading}
+                    className="mt-2 text-sm font-medium underline disabled:opacity-50"
+                >
+                    {resending
+                        ? "Sending..."
+                        : "Resend Code"}
+                </button>
+            </div>
         </div>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { forgotPasswordAction } from "@/actions/auth.actions";
+import { forgotPasswordAction } from "@/actions/forgetPassword.action";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();

@@ -1,144 +1,83 @@
-import { hashOtp } from "@/lib/otp";
-import { hashPassword } from "@/lib/password";
+"use server";
+
+import { sendPasswordResetOtpEmail } from "@/lib/email";
+import { generateOtp, hashOtp } from "@/lib/otp";
 import { prisma } from "@/lib/prisma";
 
-export async function resetPasswordAction(
-    email: string,
-    otp: string,
-    newPassword: string
+export async function forgotPasswordAction(
+    email: string
 ) {
     try {
-        // 1. Normalize email
         const normalizedEmail = email.trim().toLowerCase();
 
-        // 2. Find user
         const user = await prisma.user.findUnique({
             where: {
                 email: normalizedEmail,
             },
         });
 
+        // Don't reveal whether account exists
         if (!user) {
             return {
-                success: false,
-                message: "Invalid password reset request.",
-            };
-        }
-
-        // 3. Find password reset token
-        const resetToken =
-            await prisma.verificationToken.findFirst({
-                where: {
-                    userId: user.id,
-                    type: "PASSWORD_RESET",
-                },
-                orderBy: {
-                    createdAt: "desc",
-                },
-            });
-
-        if (!resetToken) {
-            return {
-                success: false,
-                message: "Reset code not found.",
-            };
-        }
-
-        // 4. Check expiration
-        if (resetToken.expiresAt < new Date()) {
-            await prisma.verificationToken.delete({
-                where: {
-                    id: resetToken.id,
-                },
-            });
-
-            return {
-                success: false,
-                message: "Reset code has expired.",
-            };
-        }
-
-        // 5. Check maximum attempts
-        if (resetToken.attempts >= 5) {
-            await prisma.verificationToken.delete({
-                where: {
-                    id: resetToken.id,
-                },
-            });
-
-            return {
-                success: false,
-                message: "Too many incorrect attempts.",
-            };
-        }
-
-        // 6. Hash submitted OTP
-        const submittedOtpHash = hashOtp(otp);
-
-        // 7. Compare OTP
-        if (submittedOtpHash !== resetToken.tokenHash) {
-            await prisma.verificationToken.update({
-                where: {
-                    id: resetToken.id,
-                },
-                data: {
-                    attempts: {
-                        increment: 1,
-                    },
-                },
-            });
-
-            return {
-                success: false,
-                message: "Invalid reset code.",
-            };
-        }
-
-        // 8. Validate new password
-        if (newPassword.length < 8) {
-            return {
-                success: false,
+                success: true,
                 message:
-                    "Password must be at least 8 characters.",
+                    "If an account exists, a reset code has been sent.",
             };
         }
 
-        // 9. Hash new password
-        const passwordHash =
-            await hashPassword(newPassword);
-
-        // 10. Update password
-        await prisma.user.update({
-            where: {
-                id: user.id,
-            },
-            data: {
-                passwordHash,
-            },
-        });
-
-        // 11. Delete used reset token
-        await prisma.verificationToken.delete({
-            where: {
-                id: resetToken.id,
-            },
-        });
-
-        // 12. Invalidate all existing sessions
-        await prisma.session.deleteMany({
+        // Remove old reset codes
+        await prisma.verificationToken.deleteMany({
             where: {
                 userId: user.id,
+                type: "PASSWORD_RESET",
             },
         });
+
+        // Generate OTP
+        const otp = generateOtp();
+
+        // Hash OTP
+        const tokenHash = hashOtp(otp);
+
+        // Save
+
+
+        const verificationToken =
+            await prisma.verificationToken.create({
+                data: {
+                    userId: user.id,
+                    type: "PASSWORD_RESET",
+                    tokenHash,
+                    expiresAt: new Date(
+                        Date.now() + 10 * 60 * 1000
+                    ),
+                },
+            });
+
+        try {
+            await sendPasswordResetOtpEmail(
+                user.email,
+                user.name,
+                otp
+            );
+        } catch (error) {
+            await prisma.verificationToken.delete({
+                where: {
+                    id: verificationToken.id,
+                },
+            });
+
+            throw error;
+        }
 
         return {
             success: true,
             message:
-                "Password reset successfully. Please log in again.",
+                "If an account exists, a reset code has been sent.",
         };
     } catch (error) {
         console.error(
-            "Reset password error:",
+            "Forgot password error:",
             error
         );
 

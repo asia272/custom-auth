@@ -1,3 +1,5 @@
+"use server";
+
 import { hashOtp } from "@/lib/otp";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/session";

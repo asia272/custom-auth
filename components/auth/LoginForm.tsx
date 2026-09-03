@@ -1,6 +1,8 @@
+
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -53,12 +55,13 @@ const LoginForm = () => {
                 return;
             }
 
-            // Login successful
             router.push("/private");
             router.refresh();
         } catch (error) {
             console.error("Login error:", error);
-            setError("Something went wrong. Please try again.");
+            setError(
+                "Something went wrong. Please try again."
+            );
         } finally {
             setLoading(false);
         }
@@ -117,6 +120,16 @@ const LoginForm = () => {
                         />
                     </div>
 
+                    {/* Forgot Password */}
+                    <div className="flex justify-end">
+                        <Link
+                            href="/auth/forgot-password"
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
+
                     <Button
                         type="submit"
                         className="w-full"
@@ -133,3 +146,4 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+
